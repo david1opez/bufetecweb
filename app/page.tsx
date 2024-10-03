@@ -18,7 +18,6 @@ import image7 from '../assets/7.png';
 import image8 from '../assets/8.png';
 import image9 from '../assets/9.png';
 import image10 from '../assets/10.png';
-import { title } from 'process'
 
 // Tipos
 type News = {
@@ -30,7 +29,6 @@ type News = {
 
 type User = {
   username: string
-  token: string
 }
 
 export default function Home() {
@@ -49,16 +47,25 @@ export default function Home() {
 
   // Función para obtener noticias
   const fetchNews = async () => {
-    setNews([
-      { id: '1', title: 'Noticia 1', description: 'Descripción 1', imageUrl: '' },
-      { id: '2', title: 'Noticia 2', description: 'Descripción 2', imageUrl: '' },
-    ])
+    // fetch https://buffetec-api.vercel.app/getNoticias
+    await fetch('https://buffetec-api.vercel.app/getNoticias')
+    .then(response => response.json())
+    .then(data => {
+      const news = data.articles.map((item: any, index: number) => ({
+        id: index,
+        title: item.title,
+        description: item.description,
+        imageUrl: item.urlToImage
+      }))
+
+      setNews(news)
+    })
   }
 
   // Función para iniciar sesión
   const handleLogin = (username: string, password: string) => {
     setIsLoginOpen(false)
-    setUser({ username, token: "ksdhgka" })
+    setUser({ username })
   }
 
   // Función para crear una nueva noticia
@@ -96,6 +103,27 @@ export default function Home() {
   // Función para eliminar una noticia
   const handleDeleteNews = async (id: string) => {
     setNews(news.filter(item => item.id !== id))
+
+    const newsToDelete = news.find(item => item.id === id)
+
+    if(!newsToDelete) return;
+
+    await fetch('https://buffetec-api.vercel.app/eliminarNoticia', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: newsToDelete.title,
+        description: newsToDelete.description,
+        image: newsToDelete.imageUrl
+      }),
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch((error) => {
+      console.error('Error:', error);
+    });
   }
 
   if (!user) {
@@ -158,7 +186,14 @@ function NewsList({ news, onDelete }: { news: News[], onDelete: (id: string) => 
             <CardTitle style={{fontSize: 20, color: "#14397F"}}>{item.title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <img src={item.imageUrl || image1.src} alt={item.title} className="w-full h-50 object-cover mb-2" />
+            <img 
+              src={item.imageUrl || image1.src}
+              alt={item.title}
+              className="w-full h-50 object-cover mb-2"
+              style={{
+                maxHeight: "150px",
+              }}
+            />
             <p style={{fontSize: 12, fontWeight: 500}}>{item.description.substring(0,200).substring(0,170)}...</p>
           </CardContent>
           <CardFooter>
