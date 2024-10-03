@@ -18,6 +18,7 @@ import image7 from '../assets/7.png';
 import image8 from '../assets/8.png';
 import image9 from '../assets/9.png';
 import image10 from '../assets/10.png';
+import { title } from 'process'
 
 // Tipos
 type News = {
@@ -70,6 +71,24 @@ export default function Home() {
     }
 
     setNews([...news, { ...newNews, id: newId }])
+
+    await fetch('https://buffetec-api.vercel.app/crearNoticia', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ news: {
+        title: newNews.title,
+        description: newNews.description,
+        image: newNews.imageUrl
+      }}),
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+    
     setIsCreating(false)
     setNewNews({ title: '', description: '', imageUrl: '' })
   }
