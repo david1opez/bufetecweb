@@ -7,18 +7,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
-// Images
-import image1 from '../assets/1.png';
-import image2 from '../assets/2.png';
-import image3 from '../assets/3.png';
-import image4 from '../assets/4.png';
-import image5 from '../assets/5.png';
-import image6 from '../assets/6.png';
-import image7 from '../assets/7.png';
-import image8 from '../assets/8.png';
-import image9 from '../assets/9.png';
-import image10 from '../assets/10.png';
-
 // Tipos
 type News = {
   id: string
@@ -73,8 +61,10 @@ export default function Home() {
     const newId = Date.now().toString()
 
     if(newNews.imageUrl === '') {
-      const images = [image1, image2, image3, image4, image5, image6, image7, image8, image9, image10];
-      newNews.imageUrl = images[Math.floor(Math.random() * images.length)].src;
+      const images = [
+        "",
+      ];
+      newNews.imageUrl = images[Math.floor(Math.random() * images.length)];
     }
 
     setNews([...news, { ...newNews, id: newId }])
@@ -187,7 +177,7 @@ function NewsList({ news, onDelete }: { news: News[], onDelete: (id: string) => 
           </CardHeader>
           <CardContent>
             <img 
-              src={item.imageUrl || image1.src}
+              src={item.imageUrl || "https://via.placeholder.com/150"}
               alt={item.title}
               className="w-full h-50 object-cover mb-2"
               style={{
