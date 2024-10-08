@@ -62,7 +62,16 @@ export default function Home() {
 
     if(newNews.imageUrl === '') {
       const images = [
-        "",
+        "https://bufetecweb.vercel.app/_next/static/media/1.b0413ad8.png",
+        "https://bufetecweb.vercel.app/_next/static/media/2.98e68507.png",
+        "https://bufetecweb.vercel.app/_next/static/media/3.43c2c507.png",
+        "https://bufetecweb.vercel.app/_next/static/media/4.d877bccf.png",
+        "https://bufetecweb.vercel.app/_next/static/media/5.cc66026c.png",
+        "https://bufetecweb.vercel.app/_next/static/media/6.bb5cf1a9.png",
+        "https://bufetecweb.vercel.app/_next/static/media/7.53c8d098.png",
+        "https://bufetecweb.vercel.app/_next/static/media/8.d410856c.png",
+        "https://bufetecweb.vercel.app/_next/static/media/9.4bd09491.png",
+        "https://bufetecweb.vercel.app/_next/static/media/10.45af0ce2.png"
       ];
       newNews.imageUrl = images[Math.floor(Math.random() * images.length)];
     }
