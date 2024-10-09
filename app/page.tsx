@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
-// Tipos
+import styles from './page.module.css'
+
 type News = {
   id: string
   title: string
@@ -25,15 +26,48 @@ export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [newNews, setNewNews] = useState<Omit<News, 'id'>>({ title: '', description: '', imageUrl: '' })
+  const [activePage, setActivePage] = useState('news');
+  const [users, setUsers] = useState<any[]>([]);
 
-  // Efecto para cargar noticias iniciales
   useEffect(() => {
     if (user) {
       fetchNews()
     }
   }, [user])
 
-  // Función para obtener noticias
+  useEffect(() => {
+    if(activePage === 'users') {
+      document.querySelector('.newsTitle')?.setAttribute('style', 'color: #B3B3B3; font-weight: 700; cursor: pointer');
+      document.querySelector('.newsTitle')?.classList.remove('text-3xl');
+      document.querySelector('.newsTitle')?.classList.remove(styles.activeTitle);
+      document.querySelector('.newsTitle')?.classList.add('text-2xl');
+      document.querySelector('.newsTitle')?.classList.add(styles.inactiveTitle);
+      document.querySelector('.usersTitle')?.setAttribute('style', 'color: #14397F; font-weight: 700; cursor: pointer');
+      document.querySelector('.usersTitle')?.classList.remove('text-2xl');
+      document.querySelector('.usersTitle')?.classList.remove(styles.inactiveTitle);
+      document.querySelector('.usersTitle')?.classList.add('text-3xl');
+      document.querySelector('.usersTitle')?.classList.add(styles.activeTitle);
+
+      fetch('https://buffetec-api.vercel.app/getUsers')
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setUsers(data);
+      });
+    } else {
+      document.querySelector('.newsTitle')?.setAttribute('style', 'color: #14397F; font-weight: 700; cursor: pointer');
+      document.querySelector('.newsTitle')?.classList.remove('text-2xl');
+      document.querySelector('.newsTitle')?.classList.remove(styles.inactiveTitle);
+      document.querySelector('.newsTitle')?.classList.add('text-3xl');
+      document.querySelector('.newsTitle')?.classList.add(styles.activeTitle);
+      document.querySelector('.usersTitle')?.setAttribute('style', 'color: #B3B3B3; font-weight: 700; cursor: pointer');
+      document.querySelector('.usersTitle')?.classList.remove('text-3xl');
+      document.querySelector('.usersTitle')?.classList.remove(styles.activeTitle);
+      document.querySelector('.usersTitle')?.classList.add('text-2xl');
+      document.querySelector('.usersTitle')?.classList.add(styles.inactiveTitle);
+    }
+  }, [activePage])
+
   const fetchNews = async () => {
     // fetch https://buffetec-api.vercel.app/getNoticias
     await fetch('https://buffetec-api.vercel.app/getNoticias')
@@ -50,13 +84,11 @@ export default function Home() {
     })
   }
 
-  // Función para iniciar sesión
   const handleLogin = (username: string, password: string) => {
     setIsLoginOpen(false)
     setUser({ username })
   }
 
-  // Función para crear una nueva noticia
   const handleCreateNews = async () => {
     const newId = Date.now().toString()
 
@@ -99,7 +131,6 @@ export default function Home() {
     setNewNews({ title: '', description: '', imageUrl: '' })
   }
 
-  // Función para eliminar una noticia
   const handleDeleteNews = async (id: string) => {
     setNews(news.filter(item => item.id !== id))
 
@@ -143,25 +174,111 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4" style={{color: "#14397F", fontWeight: 700}}>Portal de Noticias</h1>
-      <p
-        className="text-md mb-4"
-        style={{
-          color: "#14397F",
-          fontSize: 14,
-          marginRight: "55vw"
-        }}
-      >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-      </p>
-      <Button
-        onClick={() => setIsCreating(true)}
-        className="mb-4 font-bold"
-        style={{backgroundColor: "#14397F", marginBottom: 30}}
-      >
-        Crear Nueva Noticia
-      </Button>
-      <NewsList news={news} onDelete={handleDeleteNews} />
+      <div style={{display: "flex", alignItems: "baseline"}}>
+        <h1
+          className={`text-3xl font-bold mb-4 newsTitle ${styles.activeTitle}`}
+          style={{color: "#14397F", fontWeight: 700}}
+          onClick={() => {
+            setActivePage('news')
+          }}
+        >Portal de Noticias</h1>
+        <svg width="25" height="25" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 6L22 16L12 26" stroke="#14397F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1
+          className={`text-2xl font-bold mb-4 usersTitle ${styles.inactiveTitle}`}
+          style={{color: "#B3B3B3", fontWeight: 700, cursor: "pointer"}}
+          onClick={() => {
+            setActivePage('users')
+          }}
+        >Administración de Usuarios</h1>
+      </div>
+
+      {
+        activePage == 'users' ? (
+          <div>
+            <p
+              className={`text-md mb-4 ${styles.descripcion}`}
+              style={{
+                color: "#14397F",
+                fontSize: 14,
+              }}
+            >
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+            </p>
+
+            <div>
+              {
+                users.map((user: any) => (
+                  <div style={{marginBottom: "4vh"}}>
+                    <p><span style={{fontWeight: "700", color: "#14397F"}}>Nombre:</span> {user.nombre}</p>
+                    <p><span style={{fontWeight: "700", color: "#14397F"}}>Correo:</span> {user.email}</p>
+                    <div style={{display: "flex"}}>
+                      <p style={{fontWeight: "700", color: "#14397F"}}>Tipo: </p>
+                      <select
+                        value={user.tipo}
+                        style={{backgroundColor: "#14397F", borderRadius: 4, marginLeft: "0.5vw", color: "#FFF", padding: "0.5vh 0.4vw"}}
+                        onChange={async (e) => {
+                          try {
+                            fetch('https://buffetec-api.vercel.app/updateUser', {
+                              method: 'PUT',
+                              headers: {
+                                'Content-Type': 'application/json',
+                              },
+                              body: JSON.stringify({
+                                uid: user.uid,
+                                tipo: e.target.value
+                              }),
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                            })
+                          }
+                          catch (error) {
+                            console.error('Error:', error);
+                          }
+
+                          const updatedUsers = users.map((u: any) => {
+                            if(u.uid === user.uid) {
+                              u.tipo = e.target.value;
+                            }
+                            return u;
+                          });
+
+                          setUsers(updatedUsers);
+                        }}
+                      >
+                        <option value="abogado" style={{backgroundColor: "#FFFF", color: "#000"}}>Abogado</option>
+                        <option value="cliente" style={{backgroundColor: "#FFFF", color: "#000"}}>Cliente</option>
+                      </select>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p
+              className={`text-md mb-4 ${styles.descripcion}`}
+              style={{
+                color: "#14397F",
+                fontSize: 14,
+              }}
+            >
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+            </p>
+            <Button
+              onClick={() => setIsCreating(true)}
+              className="mb-4 font-bold"
+              style={{backgroundColor: "#14397F", marginBottom: 30}}
+            >
+              Crear Nueva Noticia
+            </Button>
+            <NewsList news={news} onDelete={handleDeleteNews} />
+          </div>
+        )
+      }
       
       <Dialog open={isCreating} onOpenChange={setIsCreating}>
         <DialogContent>
