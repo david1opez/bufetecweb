@@ -1,17 +1,9 @@
 .descripcion {
-    margin-right: 50vw;
+  margin-right: 50vw;
 }
 
 @media screen and (max-width: 1000px) {
-    .descripcion {
-        margin-right: 0;
-    }
-
-    .activeTitle {
-        font-size: 4vw;
-    }
-
-    .inactiveTitle {
-        font-size: 3vw;
-    }
+  .descripcion {
+    margin-right: 0;
+  }
 }
