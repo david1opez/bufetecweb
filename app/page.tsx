@@ -28,6 +28,8 @@ export default function Home() {
   const [newNews, setNewNews] = useState<Omit<News, 'id'>>({ title: '', description: '', imageUrl: '' })
   const [activePage, setActivePage] = useState('news');
   const [users, setUsers] = useState<any[]>([]);
+  const [editedUser, setEditedUser] = useState<any>(null);
+  const [createAttorney, setCreateAttorney] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -158,7 +160,7 @@ export default function Home() {
 
   if (!user) {
     return (
-      <Dialog open={isLoginOpen} onOpenChange={setIsLoginOpen}>
+      <Dialog open={isLoginOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Iniciar sesión</DialogTitle>
@@ -219,33 +221,40 @@ export default function Home() {
                         value={user.tipo}
                         style={{backgroundColor: "#14397F", borderRadius: 4, marginLeft: "0.5vw", color: "#FFF", padding: "0.5vh 0.4vw"}}
                         onChange={async (e) => {
-                          try {
-                            fetch('https://buffetec-api.vercel.app/updateUser', {
-                              method: 'PUT',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({
-                                uid: user.uid,
-                                tipo: e.target.value
-                              }),
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                            })
-                          }
-                          catch (error) {
-                            console.error('Error:', error);
-                          }
 
-                          const updatedUsers = users.map((u: any) => {
-                            if(u.uid === user.uid) {
-                              u.tipo = e.target.value;
+                          if(e.target.value == 'abogado') {
+                            setCreateAttorney(true);
+                            setEditedUser(user);
+                            return;
+                          } else {
+                            try {
+                              fetch('https://buffetec-api.vercel.app/updateUser', {
+                                method: 'PUT',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  uid: user?.uid,
+                                  tipo: 'cliente'
+                                }),
+                              })
+                              .then(response => response.json())
+                              .then(data => {
+                              })
                             }
-                            return u;
-                          });
-
-                          setUsers(updatedUsers);
+                            catch (error) {
+                              console.error('Error:', error);
+                            }
+            
+                            const updatedUsers = users.map((u: any) => {
+                              if(u.uid === user?.uid) {
+                                u.tipo = "cliente";
+                              }
+                              return u;
+                            });
+            
+                            setUsers(updatedUsers);
+                          }
                         }}
                       >
                         <option value="abogado" style={{backgroundColor: "#FFFF", color: "#000"}}>Abogado</option>
@@ -279,6 +288,81 @@ export default function Home() {
           </div>
         )
       }
+
+      <Dialog open={createAttorney} onOpenChange={setCreateAttorney}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Asignar {editedUser?.nombre} como Abogado</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas asignar a {editedUser?.nombre} como abogado?
+            </DialogDescription>
+            <Button
+              onClick={async () => {
+                setCreateAttorney(false);
+
+                try {
+                  fetch('https://buffetec-api.vercel.app/updateUser', {
+                    method: 'PUT',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      uid: editedUser?.uid,
+                      tipo: 'abogado'
+                    }),
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                  })
+                }
+                catch (error) {
+                  console.error('Error:', error);
+                }
+
+                const updatedUsers = users.map((u: any) => {
+                  if(u.uid === editedUser?.uid) {
+                    u.tipo = "abogado";
+                  }
+                  return u;
+                });
+
+                try {
+                  await fetch('https://buffetec-api.vercel.app/createAttorney', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      uid: editedUser?.uid,
+                      especialidad: "",
+                      descripcion: "",
+                      horarioSemanal: {
+                        lunes: [], martes: [], miercoles: [], jueves: [], viernes: [], sabado: [], domingo: []
+                      },
+                      duracionCita: 0,
+                      casosEjemplo: "",
+                      excepcionesFechas: []
+                    }),
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    console.log(data);
+                  });
+                } catch (error) {
+                  console.error('Error:', error);
+                }
+
+                setUsers(updatedUsers);
+                setEditedUser(null);
+              }}
+              className="font-bold"
+              style={{backgroundColor: "#14397F"}}
+            >
+              Aceptar
+            </Button>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
       
       <Dialog open={isCreating} onOpenChange={setIsCreating}>
         <DialogContent>
