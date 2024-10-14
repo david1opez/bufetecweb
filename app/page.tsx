@@ -2,23 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 import PageTab from "@/components/PageTab";
 import UsersPage from "@/components/UsersPage";
 import NewsPage from "@/components/NewsPage";
-import NewsList from "@/components/NewsList";
 import NewsForm from "@/components/NewsForm";
 import LoginForm from "@/components/LoginForm";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
