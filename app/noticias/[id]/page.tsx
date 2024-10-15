@@ -75,20 +75,21 @@ const Page: React.FC = () => {
           />
         </svg>
 
-        <div className="relative w-full h-60 sm:h-64 md:h-96">
+        <div className="relative w-full h-60 sm:h-64 md:h-96 ">
           <img
             src={currentNews.urlToImage}
             alt=""
-            className="w-full h-full object-cover "
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black opacity-40"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#14397F] opacity-8"></div>
+          <div className="absolute inset-0 bg-black opacity-50"></div>
         </div>
 
         <div className="absolute bottom-4 left-4 sm:bottom-8 sm:left-8 max-w-[90%]">
           <h1 className="text-white font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl leading-tight mb-2">
             {currentNews.title}
           </h1>
-          <p className="text-white text-sm sm:text-base md:text-lg font-medium">
+          <p className="text-white text-sm sm:text-base md:text-lg font-bold">
             {formatDate(currentNews.date)}
           </p>
         </div>
