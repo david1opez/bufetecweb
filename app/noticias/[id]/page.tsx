@@ -52,7 +52,7 @@ const Page: React.FC = () => {
   if (!currentNews)
     return (
       <div className="flex justify-center items-center h-screen">
-        Loading...
+        Cargando...
       </div>
     );
 
@@ -102,7 +102,7 @@ const Page: React.FC = () => {
         Ver más Noticias:
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-5 pb-10">
         {otherNews.map((article) => (
           <div
             key={article._id}
