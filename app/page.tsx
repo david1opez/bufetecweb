@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-
 import PageTab from "@/components/PageTab";
 import UsersPage from "@/components/UsersPage";
 import NewsPage from "@/components/NewsPage";
 import NewsForm from "@/components/NewsForm";
 import LoginForm from "@/components/LoginForm";
-
 import {
   Dialog,
   DialogContent,
@@ -16,6 +14,19 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+  User,
+} from "firebase/auth";
+
+import { firebaseConfig } from "@/lib/firebaseConfig";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 type News = {
   id: string;
@@ -24,8 +35,14 @@ type News = {
   imageUrl: string;
 };
 
-type User = {
-  username: string;
+type UserType = {
+  uid: string;
+  nombre: string;
+  genero: string;
+  celular: string;
+  email: string;
+  fechaDeNacimiento: string;
+  tipo: string;
 };
 
 type PageType = "news" | "users";
@@ -33,6 +50,7 @@ type PageType = "news" | "users";
 export default function Home() {
   const [news, setNews] = useState<News[]>([]);
   const [user, setUser] = useState<User | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
   const [isLoginOpen, setIsLoginOpen] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,22 +66,47 @@ export default function Home() {
   const [createAttorney, setCreateAttorney] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchNews();
-    }
-  }, [user]);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser: User | null) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchUserType(currentUser.uid);
+        fetchNews();
+      } else {
+        setUserType(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
-    if (activePage === "users") {
+    if (activePage === "users" && userType === "abogado") {
       fetchUsers();
     }
-  }, [activePage]);
+  }, [activePage, userType]);
+
+  const fetchUserType = async (uid: string) => {
+    try {
+      const response = await fetch(
+        `https://buffetec-api.vercel.app/getUser?uid=${uid}`
+      );
+      const userData: UserType = await response.json();
+      setUserType(userData.tipo);
+      if (userData.tipo !== "abogado") {
+        await handleLogout();
+        alert("No tienes permisos para acceder a esta aplicación.");
+      }
+    } catch (error) {
+      console.error("Error fetching user type:", error);
+      await handleLogout();
+    }
+  };
 
   const fetchNews = async () => {
     const response = await fetch("https://buffetec-api.vercel.app/getNoticias");
     const data = await response.json();
     const formattedNews = data.articles.map((item: any) => ({
-      id: item._id, // Use the MongoDB _id directly
+      id: item._id,
       title: item.title,
       description: item.description,
       imageUrl: item.urlToImage || item.image,
@@ -77,11 +120,24 @@ export default function Home() {
     setUsers(data);
   };
 
-  const handleLogin = (username: string, password: string) => {
-    setIsLoginOpen(false);
-    setUser({ username });
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setIsLoginOpen(false);
+    } catch (error) {
+      console.error("Error signing in:", error);
+      alert("Credenciales inválidas. Intenta otra vez.");
+    }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      window.location.reload();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
   const handleCreateNews = async () => {
     if (!newNews.title || !newNews.description) {
       alert("El título y la descripción son obligatorios.");
@@ -292,7 +348,7 @@ export default function Home() {
     setEditedUser(null);
   };
 
-  if (!user) {
+  if (!user || userType !== "abogado") {
     return (
       <Dialog open={isLoginOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -310,20 +366,32 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex flex-row gap-5 mb-5">
-        <PageTab
-          title="Portal de Noticias"
-          isActive={activePage === "news"}
-          onClick={() => setActivePage("news")}
-        />
-        <PageTab
-          title="Administración de Usuarios"
-          isActive={activePage === "users"}
-          onClick={() => setActivePage("users")}
-        />
+      <div className="flex justify-between items-center mb-5">
+        <div className="flex flex-row gap-5">
+          <PageTab
+            title="Portal de Noticias"
+            isActive={activePage === "news"}
+            onClick={() => setActivePage("news")}
+          />
+          {userType === "abogado" && (
+            <PageTab
+              title="Administración de Usuarios"
+              isActive={activePage === "users"}
+              onClick={() => setActivePage("users")}
+            />
+          )}
+        </div>
+        <Button
+          className="
+        px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 ease-in-out bg-[#14397F] text-white shadow-md
+        focus:outline-none focus:ring-2 focus:ring-[#14397F] focus:ring-opacity-50"
+          onClick={handleLogout}
+        >
+          Cerrar sesión
+        </Button>
       </div>
 
-      {activePage === "users" ? (
+      {activePage === "users" && userType === "abogado" ? (
         <UsersPage users={users} onUserTypeChange={handleUserTypeChange} />
       ) : (
         <NewsPage
